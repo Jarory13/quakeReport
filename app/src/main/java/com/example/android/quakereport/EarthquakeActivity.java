@@ -15,6 +15,7 @@
  */
 package com.example.android.quakereport;
 
+import android.app.DownloadManager;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -28,8 +29,37 @@ import android.widget.ListView;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import android.app.LoaderManager;
+import android.app.LoaderManager.LoaderCallbacks;
+import android.content.Loader;
 
-public class EarthquakeActivity extends AppCompatActivity {
+public class EarthquakeActivity extends AppCompatActivity implements LoaderCallbacks<List<Earthquake>>{
+
+    private static final int EARTHQUAKE_LOADER_ID = 1;
+
+    @Override
+    public Loader<List<Earthquake>> onCreateLoader(int i, Bundle bundle) {
+        // Create a new loader for the given URL
+        return new EarthquakeLoader(this, QueryUtils.USGS_QUERY_URL);
+    }
+
+    @Override
+    public void onLoadFinished(Loader<List<Earthquake>> loader, List<Earthquake> earthquakes) {
+        // Clear the adapter of previous earthquake data
+        mAdapter.clear();
+
+        // If there is a valid list of {@link Earthquake}s, then add them to the adapter's
+        // data set. This will trigger the ListView to update.
+        if (earthquakes != null && !earthquakes.isEmpty()) {
+            mAdapter.addAll(earthquakes);
+        }
+    }
+
+    @Override
+    public void onLoaderReset(Loader<List<Earthquake>> loader) {
+        // Loader reset, so we can clear out our existing data.
+        mAdapter.clear();
+    }
 
     public static final String LOG_TAG = EarthquakeActivity.class.getName();
     private EarthquakeAdapter mAdapter;
@@ -48,9 +78,6 @@ public class EarthquakeActivity extends AppCompatActivity {
         // Set the adapter on the {@link ListView}
         // so the list can be populated in the user interface
         earthquakeListView.setAdapter(mAdapter);
-
-        EarthquakeTask task = new EarthquakeTask();
-        task.execute(QueryUtils.USGS_QUERY_URL);
 
         // Set an item click listener on the ListView, which sends an intent to a web browser
         // to open a website with more information about the selected earthquake.
@@ -71,35 +98,10 @@ public class EarthquakeActivity extends AppCompatActivity {
             }
         });
 
-
+        // Get a reference to the LoaderManager, in order to interact with loaders.
+        LoaderManager loaderManager = getLoaderManager();
+        loaderManager.initLoader(EARTHQUAKE_LOADER_ID, null, this);
 
     }
 
-
-    private class EarthquakeTask extends AsyncTask<String, Void, List<Earthquake>> {
-
-        @Override
-        protected List doInBackground(String... urls) {
-
-            if (urls.length < 1 || urls[0] == null) {
-                return null;
-            }
-            return QueryUtils.fetchEarthquakeData(urls[0]);
-        }
-
-        @Override
-        protected void onPostExecute(List<Earthquake> data) {
-            if (data == null) {
-                return;
-            }
-            // Clear the adapter of previous earthquake data
-            mAdapter.clear();
-
-            // If there is a valid list of {@link Earthquake}s, then add them to the adapter's
-            // data set. This will trigger the ListView to update.
-            if (data != null && !data.isEmpty()) {
-                mAdapter.addAll(data);
-            }
-        }
-    }
 }
