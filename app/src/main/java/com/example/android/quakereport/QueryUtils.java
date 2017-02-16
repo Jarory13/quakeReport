@@ -28,7 +28,7 @@ import java.util.List;
 public final class QueryUtils {
 
 
-    public static final String USGS_QUERY_URL = "http://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&eventtype=earthquake&orderby=time&minmag=6&limit=10";
+//    public static final String USGS_QUERY_URL = "http://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson&eventtype=earthquake&orderby=time&minmag=6&limit=10";
     /** Tag for the log messages */
     public static final String LOG_TAG = QueryUtils.class.getSimpleName();
     /**
